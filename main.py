@@ -7,6 +7,9 @@ from selenium.webdriver.common.action_chains import ActionChains
 import selenium
 import sys
 import time
+import urllib
+
+
 
 def getpostdata(driver,url):
 
@@ -30,8 +33,14 @@ def getpostdata(driver,url):
     nextlink = None
     if len(elems) > 0:
         nextlink = elems[0].get_attribute("href")
-    
-    result = {"title":title, "timestamp":timestamp, "link":nextlink, "image":"TODO"}
+
+    # save image
+    elems = driver.find_elements(By.XPATH, '//img')
+    imagelink = elems[0].get_attribute("src")
+    imagename = imagelink.split('/')[-1]
+    urllib.urlretrieve(imagelink, "images/"+imagename)
+        
+    result = {"title":title, "timestamp":timestamp, "link":nextlink, "image":imagename}
         
     return result
 
@@ -49,19 +58,19 @@ def main():
     cpost = "http://fractalyze.blogspot.sg/2016/05/helicoidal.html"
     content = ["* fractalyze"]
 
-    nmaxposts = 10
+    nmaxposts = 10000000000
     nposts = 0
     while len(cpost) > 0:
         postdata = getpostdata(driver,cpost)
         content.append("** " + str(postdata["title"]))
         content.append("blogger_link : "  + str(cpost))
         content.append("blogger_timestamp : "  + str(postdata["timestamp"]))
-        content.append("blogger_image : " + str(postdata["image"]))
+        content.append("blogger_image : file://c:/DEV/bloggerscrap/images/" + str(postdata["image"]))
 
         print("new post" + " -- ".join(content))
         
         cpost = postdata["link"]
-        time.sleep(2)
+        time.sleep(1)
 
         nposts +=1
         if nposts > nmaxposts:
